@@ -27,14 +27,17 @@ const index = ({ navigation }) => {
     };
   });
 
-  const { gatherUserList } = userStateDispatch
+  const { gatherUserList ,onSuccess} = userStateDispatch
   const { UserList = [] } = userModelState
   const [sortList, setSortList] = useState([])
   useEffect(() => {
 
     const ini = async () => {
       await SelectQuery().then((res) => {
-        if (res?.length > 0) { setSortList(res) }
+        if (res?.length > 0) { setSortList(res);
+          onSuccess(res);
+        
+        }
         else {
            fetchDatafromSever()
         }
