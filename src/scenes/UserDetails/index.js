@@ -19,6 +19,7 @@ const index = ({navigation,route}) => {
   website= "",
   company={}}=userDetails||{}
 console.log("userDetails",userDetails)
+
   return (
     <SafeAreaView style={innerStyle.container}>
       <StatusBar
@@ -26,7 +27,7 @@ console.log("userDetails",userDetails)
         backgroundColor={Colors.PRIMARY_BACKGROUND}
       />
       <View style={{justifyContent:"center",alignItems:"center"}}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={()=>{navigation.goBack()}}>
       <Text
             style={[
               innerStyle.title,

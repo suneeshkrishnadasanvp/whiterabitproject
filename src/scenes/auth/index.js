@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,69 +9,100 @@ import {
   ScrollView,
   TextInput
 } from 'react-native';
-import {Colors, Styling, Typography} from '../../styles';
-import {useDispatch, useSelector} from 'react-redux';
+import { Colors, Styling, Typography } from '../../styles';
+import { useDispatch, useSelector } from 'react-redux';
 import { FlatList } from 'react-native-gesture-handler';
 import ListItem from '../../components/ListItem'
 import _ from 'lodash'
-const index = ({navigation}) => {
-  const {userModel: userModelState} = useSelector(({userModel}) => {
+import { CreateTable, InsertQuery, SelectQuery } from '../../configure/Sqlfunctions'
+const index = ({ navigation }) => {
+  const { userModel: userModelState } = useSelector(({ userModel }) => {
     return {
       userModel,
     };
   });
-  const {userModel: userStateDispatch} = useDispatch(({userModel}) => {
+  const { userModel: userStateDispatch } = useDispatch(({ userModel }) => {
     return {
       ...userModel,
     };
   });
-  
-const {gatherUserList}=userStateDispatch
-const {UserList=[]}=userModelState
-const [sortList ,setSortList]=useState([])
-useEffect(() => {
-  
-  const ini=async()=>{
-let res =await gatherUserList().then((res)=>setSortList(res))
-  }
-  ini()
-}, []);
 
-function customFilter( toSearch=''){
-  let result = UserList.filter(o => o?.name?.toLowerCase().includes(toSearch)||o?.email?.toLowerCase().includes(toSearch));
-  setSortList(result)
-}
+  const { gatherUserList } = userStateDispatch
+  const { UserList = [] } = userModelState
+  const [sortList, setSortList] = useState([])
+  useEffect(() => {
+
+    const ini = async () => {
+      await SelectQuery().then((res) => {
+        if (res?.length > 0) { setSortList(res) }
+        else {
+           fetchDatafromSever()
+        }
+      }).catch(() => {
+
+      })
+
+    }
+    CreateTable()
+    ini()
+
+  }, []);
+
+
+
+  const fetchDatafromSever = async () => {
+    await gatherUserList().then((res) => {
+      setSortList(res)
+      InsertQuery(res)
+    })
+  }
+
+
+  function customFilter(toSearch = '') {
+    let result = UserList.filter(o => o?.name?.toLowerCase().includes(toSearch) || o?.email?.toLowerCase().includes(toSearch));
+    setSortList(result)
+  }
   return (
     <SafeAreaView style={innerStyle.container}>
       <StatusBar
         barStyle="default"
         backgroundColor={Colors.PRIMARY_BACKGROUND}
       />
-       <Text
-            style={[
-              innerStyle.title,
-              Typography.FONT_BOLD,
-              {color: Colors.FONT_SKYBLUE, fontSize: Typography.FONT_SIZE_20},
-            ]}>
-           Random User Details
-          </Text>
-          <TextInput
-        style={{height: 40,margin:10,borderRadius:10,backgroundColor:"#FFFFFF"}}
+      <Text
+        style={[
+          innerStyle.title,
+          Typography.FONT_BOLD,
+          { color: Colors.FONT_SKYBLUE, fontSize: Typography.FONT_SIZE_20 },
+        ]}>
+        Random User Details
+      </Text>
+      <TextInput
+        style={{ height: 40, margin: 10, borderRadius: 10, backgroundColor: "#FFFFFF" }}
         placeholder="Search!"
         onChangeText={text => {
-          if(text===""){
+          if (text === "") {
             setSortList(UserList)
-          }else
-        {  customFilter(text.toLowerCase())}}}
+          } else { customFilter(text.toLowerCase()) }
+        }}
       />
       <FlatList
-      data={sortList}
-      renderItem={({item})=><ListItem onPress={()=>{
-    navigation.navigate('UserDetails',{userDetails:item});
-      }} item={item}></ListItem>}
-      
+        data={sortList}
+        renderItem={({ item }) => <ListItem onPress={() => {
+          SelectQuery()
+          // navigation.navigate('UserDetails',{userDetails:item});
+        }} item={item}></ListItem>}
+ListEmptyComponent={<View style={{flex:1}}>
+  <Text
+        style={[
+          innerStyle.title,
+          Typography.FONT_BOLD,
+          { color: Colors.FONT_SKYBLUE, fontSize: Typography.FONT_SIZE_20 },
+        ]}>
+        No Data
+      </Text>
+</View>}
       ></FlatList>
-      
+
     </SafeAreaView>
   );
 };
@@ -98,7 +129,7 @@ const innerStyle = StyleSheet.create({
     fontSize: Typography.FONT_SIZE_16,
     textAlign: 'center',
     color: Colors.WHITE,
-    marginVertical:40
+    marginVertical: 40
   },
   firstButtonSytyle: {
     marginTop: 40,
